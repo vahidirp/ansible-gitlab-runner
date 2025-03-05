@@ -9,3 +9,4 @@ runner_shutdown_timeout: "10"
 metrics_username: "admin"
 metrics_password: "promprom"
 ip_whitelist: 192.168.1.0/24, 127.0.0.1/32
+acme_email: example@example.example

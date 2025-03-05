@@ -1,6 +1,8 @@
 # Gitlab Runner Ansible 
 ### Deploy and register Gitlab instance runner with Ansible and Docker.
 
+#### Run generator for creating inventory file.
+#### Passwords for Basic Auth of usersfile of Traefik and Runner metrics password will auto generate bcrypt
 > Stages 
 
 * Install Docker

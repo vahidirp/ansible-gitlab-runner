@@ -46,6 +46,7 @@ services:
       - traefik.http.middlewares.web-auth.basicauth.usersfile=/usersfile
       - traefik.http.middlewares.ip-whitelist.ipwhitelist.sourcerange={{ ip_whitelist }}
       - traefik.http.routers.traefik.middlewares=https-redirect
+      - traefik.http.routers.traefik.service=traefik-service
       - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
       - traefik.http.routers.traefik.entrypoints=http
       - traefik.http.routers.traefik.rule=Host(`{{ traefik_subdomain }}.{{ domain }}`)
@@ -58,6 +59,7 @@ services:
       - traefik.http.routers.traefik-secure.service=traefik
       - traefik.http.services.traefik.loadbalancer.server.port=8080
       - traefik.http.routers.traefik_metrics.entrypoints=http
+      - traefik.http.routers.traefik_metrics.service=metrics-service
       - traefik.http.routers.traefik_metrics.rule=Host(`{{ traefik_metrics_subdomain }}.{{ domain }}`)
       - traefik.http.routers.traefik_metrics-secure.entrypoints=https
       - traefik.http.routers.traefik_metrics-secure.rule=Host(`{{ traefik_metrics_subdomain }}.{{ domain }}`)
