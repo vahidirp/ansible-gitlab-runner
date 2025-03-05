@@ -8,9 +8,13 @@
 * Creating directories and copy docker compose as template
 * Create network
 * Deploy gitlab runner
+* Deploy traefik as reverse proxy
 * Config gitlab runner and register by default variable or by inventory variables for each host.
+* Other gitlab runner configurations
 * Config intervals of runner and prometheus monitoring of gitlab runner and expose on 9252
 
+
+Gitlab runner exposed with traefik label configurations.
 
 > Monitoring
 
