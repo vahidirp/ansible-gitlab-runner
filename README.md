@@ -2,7 +2,7 @@
 ### Deploy and register Gitlab instance runner with Ansible and Docker.
 
 #### Run generator for creating inventory file.
-#### Passwords for Basic Auth of usersfile of Traefik and Runner metrics password will auto generate bcrypt
+#### Passwords for Basic Auth of usersfile of Traefik will auto generate bcrypt, Runner metrics auth password not supported bcrypt natively and used as PlainText.
 #### Change acme_email variable in default/main.yml.
 > Stages 
 

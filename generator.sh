@@ -139,7 +139,7 @@ echo "========================================"
 # Install yq if not present
 install_yq
 
-# Install Python and bcrypt
+# Install Python and bcrypt (still needed for basic_auth_users)
 install_bcrypt
 
 # Ask for number of runners
@@ -172,19 +172,18 @@ for ((i=1; i<=num_runners; i++)); do
     prompt_with_default "Enter check interval" "2" "interval"
     prompt_with_default "Enter shutdown timeout" "10" "shutdown_timeout"
     prompt_with_default "Enter metrics username" "admin" "metrics_user"
-    prompt_for_password "metrics_pass"
-    hashed_metrics_pass=$(generate_bcrypt_hash "$metrics_pass")
+    prompt_for_password "metrics_pass"  # Keep this plaintext for GitLab Runner
     prompt_with_default "Enter Traefik subdomain" "traefik" "traefik_sub"
     prompt_with_default "Enter domain" "example.runner.gitlab.name.tld" "domain"
     prompt_with_default "Enter metrics subdomain" "metrics.runner.gitlab.com" "metrics_sub"
     prompt_with_default "Enter Traefik metrics subdomain" "trmetrics.runner.gitlab.com" "traefik_metrics_sub"
     
-    # Prompt for basic auth username and password
+    # Prompt for basic auth username and password (hashed for other purposes)
     prompt_with_default "Enter basic auth username" "admin" "basic_auth_user"
     prompt_for_password "basic_auth_pass"
     hashed_pass=$(generate_bcrypt_hash "$basic_auth_pass")
 
-    # Store configuration
+    # Store configuration (metrics_password is plaintext, basic_auth_pass is hashed)
     runners_config["$runner_name"]=$(cat <<EOF
 ansible_host: "$ansible_host"
 ansible_ssh_private_key_file: "$ssh_key"
@@ -197,7 +196,7 @@ runner_concurrent: "$concurrent"
 runner_interval: "$interval"
 runner_shutdown_timeout: "$shutdown_timeout"
 metrics_username: "$metrics_user"
-metrics_password: "$hashed_metrics_pass"
+metrics_password: "$metrics_pass"  # Plaintext for GitLab Runner metrics server
 traefik_subdomain: "$traefik_sub"
 domain: "$domain"
 metrics_subdomain: "$metrics_sub"
@@ -216,9 +215,11 @@ for runner_name in "${!runners_config[@]}"; do
     gitlab_url=$(echo "${runners_config[$runner_name]}" | grep -oP '(?<=gitlab_url: ")[^"]*')
     runner_token=$(echo "${runners_config[$runner_name]}" | grep -oP '(?<=gitlab_runner_token: ")[^"]*')
     basic_auth_user=$(echo "${runners_config[$runner_name]}" | grep -oP '(?<=basic_auth_users:\n  )[^:]*')
+    metrics_user=$(echo "${runners_config[$runner_name]}" | grep -oP '(?<=metrics_username: ")[^"]*')
     echo "Host IP: $host_ip"
     echo "GitLab URL: $gitlab_url"
     echo "Runner token: $runner_token"
+    echo "Metrics Username: $metrics_user"
     echo "Basic Auth User: $basic_auth_user"
     echo "------------------------"
 done
