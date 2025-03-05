@@ -3,6 +3,7 @@
 
 #### Run generator for creating inventory file.
 #### Passwords for Basic Auth of usersfile of Traefik and Runner metrics password will auto generate bcrypt
+#### Change acme_email variable in default/main.yml.
 > Stages 
 
 * Install Docker
