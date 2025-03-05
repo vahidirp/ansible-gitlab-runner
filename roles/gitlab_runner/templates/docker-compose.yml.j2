@@ -1,0 +1,27 @@
+---
+services:
+  gitlab-runner:
+    image: gitlab/gitlab-runner:latest
+    restart: unless-stopped
+    container_name: "gitlab-runner"
+    hostname: "gitlab-runner"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - runner_data:/etc/gitlab-runner
+    networks:
+      - {{ gitlab_runner_network }}
+    healthcheck:
+      test: ["CMD", "gitlab-runner", "verify"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  {{ gitlab_runner_network }}:
+    name: {{ gitlab_runner_network }}
+    external: true
+
+volumes:
+  runner_data:
+    name: runner_data
+    external: false

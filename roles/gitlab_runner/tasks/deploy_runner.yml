@@ -1,0 +1,27 @@
+---
+- name: Create GitLab Runner directory if it does not exist
+  file:
+    path: /srv/gitlab-runner
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Stop existing GitLab Runner if running
+  shell: "docker compose down"
+  args:
+    chdir: /srv/gitlab-runner
+  ignore_errors: yes 
+
+- name: Copy Docker Compose file
+  template:
+    src: gitlab-runner-compose.j2
+    dest: /srv/gitlab-runner/docker-compose.yml
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Start GitLab Runner with Docker Compose
+  shell: "docker compose up -d"
+  args:
+    chdir: /srv/gitlab-runner

@@ -1,0 +1,25 @@
+- name: Check if GitLab Runner container is running
+  shell: docker ps --format "{{ '{{' }} .Names {{ '}}' }}" | grep -w gitlab-runner
+  register: gitlab_runner_status
+  ignore_errors: true
+
+- name: Register GitLab Runner if container is running
+  shell: >
+    docker exec -i gitlab-runner gitlab-runner register
+    --non-interactive
+    --url "{{ gitlab_url }}"
+    --registration-token "{{ gitlab_runner_token }}"
+    --executor "docker"
+    --docker-image "alpine"
+    --description "GitLab Runner on {{ inventory_hostname }}"
+    --tag-list "{{ gitlab_runner_tags }}"
+    --run-untagged="true"
+    --locked="false"
+    --access-level="not_protected"
+    --docker-privileged
+    --docker-volumes "/var/run/docker.sock:/var/run/docker.sock"
+    --docker-volumes "/cache"
+    --docker-pull-policy "if-not-present"
+  args:
+    executable: /bin/bash
+  when: gitlab_runner_status.rc == 0

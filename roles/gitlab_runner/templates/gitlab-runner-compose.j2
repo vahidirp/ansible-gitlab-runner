@@ -1,0 +1,42 @@
+---
+services:
+  gitlab-runner:
+    image: gitlab/gitlab-runner:latest
+    restart: unless-stopped
+    container_name: "gitlab-runner"
+    hostname: "gitlab-runner"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - runner_data:/etc/gitlab-runner
+    networks:
+      - {{ gitlab_runner_network }}
+      labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network={{ gitlab_runner_network }}"
+      - "traefik.http.routers.runnermetrics.entrypoints=http"
+      - "traefik.http.routers.runnermetrics.rule=Host(`{{ metrics_subdomain }}.{{ domain }}`)
+      - "traefik.http.routers.runnermetrics.middlewares=https-redirect"
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.runnermetrics-secure.entrypoints=https"
+      - "traefik.http.routers.runnermetrics-secure.rule=Host(`{{ metrics_subdomain }}.{{ domain }}`)
+      - "traefik.http.routers.runnermetrics-secure.tls=true"
+      - "traefik.http.routers.runnermetrics-secure.tls.options=default"
+      - "traefik.http.routers.runnermetrics-secure.middlewares=web-auth"
+      - "traefik.http.routers.runnermetrics-secure.tls.certresolver=trcert"
+      - "traefik.http.services.runnermetrics.loadbalancer.server.port=9252"
+
+    healthcheck:
+      test: ["CMD", "gitlab-runner", "verify"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  {{ gitlab_runner_network }}:
+    name: {{ gitlab_runner_network }}
+    external: true
+
+volumes:
+  runner_data:
+    name: runner_data
+    external: false

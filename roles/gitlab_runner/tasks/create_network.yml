@@ -1,0 +1,5 @@
+---
+- name: Create Docker Network for GitLab Runner
+  docker_network:
+    name: "{{ gitlab_runner_network }}"
+    state: present

@@ -1,0 +1,21 @@
+---
+- name: Install Docker
+  ansible.builtin.include_tasks: install_docker.yml
+
+- name: Create Docker Network
+  ansible.builtin.include_tasks: create_network.yml
+
+- name: Deploy Traefik as Reverse proxy
+  ansible.builtin.include_tasks: deploy_traefik.yml
+  
+- name: Deploy GitLab Runner with Docker Compose
+  ansible.builtin.include_tasks: deploy_runner.yml
+
+- name: Register GitLab Runner
+  ansible.builtin.include_tasks: register_runner.yml
+
+- name: Configure Monitoring
+  ansible.builtin.include_tasks: configure_monitoring.yml
+
+- name: Configure Others
+  ansible.builtin.include_tasks: other_configs.yml

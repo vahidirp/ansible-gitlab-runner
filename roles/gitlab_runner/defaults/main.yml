@@ -1,0 +1,11 @@
+---
+gitlab_runner_network: "gitlab-runner-net"
+gitlab_url: "https://gitlab.example.com/"
+gitlab_runner_token: "YOUR_GITLAB_RUNNER_TOKEN"
+gitlab_runner_tags: "docker,linux"
+runner_concurrent: "5"
+runner_interval: "2"
+runner_shutdown_timeout: "10"
+metrics_username: "admin"
+metrics_password: "promprom"
+ip_whitelist: 192.168.1.0/24, 127.0.0.1/32

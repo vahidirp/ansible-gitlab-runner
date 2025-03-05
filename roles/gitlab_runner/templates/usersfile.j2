@@ -1,0 +1,3 @@
+{% for user, password_hash in basic_auth_users.items() %}
+{{ user }}:{{ password_hash }}
+{% endfor %}

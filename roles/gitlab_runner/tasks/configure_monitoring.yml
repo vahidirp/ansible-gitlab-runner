@@ -1,0 +1,23 @@
+- name: Enable monitoring for GitLab Runner
+  shell: |
+    docker exec gitlab-runner sh -c "
+      if ! grep -q '^\[\[runners.metrics\]\]' /etc/gitlab-runner/config.toml; then
+        echo -e '\n[[runners.metrics]]' >> /etc/gitlab-runner/config.toml
+        echo '  enabled = true' >> /etc/gitlab-runner/config.toml
+        echo '  address = \"127.0.0.1:9252\"' >> /etc/gitlab-runner/config.toml
+      else
+        sed -i 's/^  enabled = .*/  enabled = true/' /etc/gitlab-runner/config.toml
+        sed -i 's/^  address = .*/  address = \"127.0.0.1:9252\"/' /etc/gitlab-runner/config.toml
+      fi
+
+      if ! grep -q '^\[\[metrics.basic_auth\]\]' /etc/gitlab-runner/config.toml; then
+        echo '  [[metrics.basic_auth]]' >> /etc/gitlab-runner/config.toml
+        echo '    username = \"{{ metrics_username }}\"' >> /etc/gitlab-runner/config.toml
+        echo '    password = \"{{ metrics_password }}\"' >> /etc/gitlab-runner/config.toml
+      else
+        sed -i 's/^    username = .*/    username = \"{{ metrics_username }}\"/' /etc/gitlab-runner/config.toml
+        sed -i 's/^    password = .*/    password = \"{{ metrics_password }}\"/' /etc/gitlab-runner/config.toml
+      fi
+    "
+  args:
+    executable: /bin/bash

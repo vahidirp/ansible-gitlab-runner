@@ -1,0 +1,80 @@
+---
+services:
+  traefik:
+    image: traefik:latest
+    container_name: "traefik"
+    hostname: "traefik"
+    restart: always
+    command:
+      - --log.level=ERROR
+      - --log.filepath=/log-file.log
+      - --log.format=json
+      - --api.dashboard=true
+      - --api=true
+      - --api.insecure=true
+      - --ping=true
+      - --accesslog=true
+      - --accesslog.fields.names.StartUTC=drop
+      - --accesslog.bufferingsize=250
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=edge
+      - --entrypoints.http.address=:80
+      - --entrypoints.https.address=:443
+      - --metrics.prometheus=true
+      - --entryPoints.metrics.address=:8082
+      - --metrics.prometheus.entryPoint=metrics
+      - --certificatesresolvers.trcert.acme.email={{ acme_email }}
+      - --certificatesresolvers.trcert.acme.storage=/acme/acme.json
+      - --certificatesresolvers.trcert.acme.tlschallenge=true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-acme:/acme
+      - /srv/traefik/usersfile:/usersfile:ro
+    healthcheck:
+      test: wget --quiet --tries=1 --spider http://localhost:8080/ping || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network={{ gitlab_runner_network }}
+      - traefik.http.middlewares.web-auth.basicauth.usersfile=/usersfile
+      - traefik.http.middlewares.ip-whitelist.ipwhitelist.sourcerange={{ ip_whitelist }}
+      - traefik.http.routers.traefik.middlewares=https-redirect
+      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+      - traefik.http.routers.traefik.entrypoints=http
+      - traefik.http.routers.traefik.rule=Host(`{{ traefik_subdomain }}.{{ domain }}`)
+      - traefik.http.routers.traefik-secure.entrypoints=https
+      - traefik.http.routers.traefik-secure.rule=Host(`{{ traefik_subdomain }}.{{ domain }}`)
+      - traefik.http.routers.traefik-secure.tls=true
+      - traefik.http.routers.traefik-secure.tls.options=default
+      - traefik.http.routers.traefik-secure.middlewares=web-auth,ip-whitelist
+      - traefik.http.routers.traefik-secure.tls.certresolver=trcert
+      - traefik.http.routers.traefik-secure.service=traefik
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
+      - traefik.http.routers.traefik_metrics.entrypoints=http
+      - traefik.http.routers.traefik_metrics.rule=Host(`{{ traefik_metrics_subdomain }}.{{ domain }}`)
+      - traefik.http.routers.traefik_metrics-secure.entrypoints=https
+      - traefik.http.routers.traefik_metrics-secure.rule=Host(`{{ traefik_metrics_subdomain }}.{{ domain }}`)
+      - traefik.http.routers.traefik_metrics-secure.tls=true
+      - traefik.http.routers.traefik_metrics-secure.tls.options=default
+      - traefik.http.routers.traefik_metrics-secure.middlewares=web-auth,ip-whitelist
+      - traefik.http.routers.traefik_metrics-secure.tls.certresolver=trcert
+      - traefik.http.routers.traefik_metrics-secure.service=metrics
+      - traefik.http.services.metrics.loadbalancer.server.port=8082
+    networks:
+      - {{ gitlab_runner_network }}
+
+volumes:
+  traefik-acme:
+    name: traefik-acme
+
+networks:
+  {{ gitlab_runner_network }}:
+    name: {{ gitlab_runner_network }}
+    external: true

@@ -1,0 +1,32 @@
+---
+- name: Create Traefik directory if it does not exist
+  file:
+    path: /srv/traefik
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy Traefik with Docker Compose
+  hosts: traefik_server
+  tasks:
+    - name: Copy docker-compose template
+      template:
+        src: traefik-compose.j2
+        dest: /srv/traefik/docker-compose.yml
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Copy Traefik Basic Auth Users File
+      copy:
+        src: usersfile
+        dest: /srv/traefik/usersfile
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Start Traefik with Docker Compose
+      shell: "docker compose up -d"
+      args:
+        chdir: /srv/traefik
